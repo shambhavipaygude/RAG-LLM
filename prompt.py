@@ -34,25 +34,37 @@ llm = AzureChatOpenAI(deployment_name='Test1',
                       model_name='gpt-35-turbo',
                       openai_api_version='2023-07-01-preview',
                       openai_api_key='d4f878c740d749deb907a6ebc9929c0d',
-                      azure_endpoint="https://varuny.openai.azure.com/")
+                      azure_endpoint="https://varuny.openai.azure.com/",
+                      temperature=0.1,  # Lower temperature for more deterministic outputs
+                    #   max_tokens=2048,  # Increase if you need longer responses
+                    )
 
 def extract_rules_from_text(text):
     rules = {
-        "Break Rules": [],
-        "Overtime Rules": [],
-        "Show Up Rules": []
+        "Hours of Work Rules": [],
+        "Meal Breaks Rules": [],
+        "Rest Periods Rules": [],
+        "Holiday Pay Calculation Rules": [],
+        "Show up Pay and Minimum Hours Rules": [],
+        "Overtime Pay Rules": []
     }
     
     current_rule_type = None
     lines = text.splitlines()
 
     for line in lines:
-        if "Break Rules:" in line:
-            current_rule_type = "Break Rules"
-        elif "Overtime Rules:" in line:
-            current_rule_type = "Overtime Rules"
-        elif "Show-Up Rules:" in line or "Show Up Rules:" in line or "Show-up Rules:" in line or "Show up Rules:" in line:
-            current_rule_type = "Show Up Rules"
+        if "Hours of Work Rules:" in line:
+            current_rule_type = "Hours of Work Rules"
+        elif "Meal Breaks Rules:" in line:
+            current_rule_type = "Meal Breaks Rules"
+        elif "Rest Periods Rules:" in line:
+            current_rule_type = "Rest Periods Rules"
+        elif "Holiday Pay Calculation Rules:" in line:
+            current_rule_type = "Holiday Pay Calculation Rules"
+        elif "Show up Pay and Minimum Hours Rules:" in line:
+            current_rule_type = "Show up Pay and Minimum Hours Rules"
+        elif "Overtime Pay Rules:" in line:
+            current_rule_type = "Overtime Pay Rules"
         elif current_rule_type and line.strip():
             rules[current_rule_type].append(line.strip())
 
@@ -65,7 +77,7 @@ def save_rules_to_mvl(rules_data, output_file):
 
 def load_documents_from_directory(directory_path, processed_docs):
     new_docs = []
-    files = processed_docs[:]  # Start with the already processed files
+    files = processed_docs[:] 
 
     for file in os.listdir(directory_path):
         file_path = os.path.join(directory_path, file)
@@ -86,7 +98,7 @@ def load_documents_from_directory(directory_path, processed_docs):
         docs = text_splitter.split_documents(loaded_docs)
         
         new_docs.extend(docs) 
-        files.append(file)  # contains all the files that have either been processed or are new
+        files.append(file)  
         processed_docs.append(file)  
 
     return new_docs, files
@@ -142,16 +154,7 @@ def get_index_name(directory):
 def get_response_llm(llm, vectorstore_pinecone, query):
     retriever = vectorstore_pinecone.as_retriever(
         search_type="similarity", search_kwargs={"k": 13}
-    )
-    # retrieved_docs = retriever.get_relevant_documents(query)
-    # for i, doc in enumerate(retrieved_docs, start=1):
-    #     print(f"{i}:\n")
-    #     print(f"  Text: {doc.page_content}")
-    #     if hasattr(doc, 'metadata'):
-    #         print(f"  Metadata: {doc.metadata}")
-    #     if hasattr(doc, 'score'):
-    #         print(f"  Score: {doc.score}")
-    #     print("\n") 
+    ) 
 
     qa = RetrievalQA.from_chain_type(
         llm=llm,
