@@ -33,10 +33,9 @@ pc = Pinecone(api_key=pinecone_api_key)
 llm = AzureChatOpenAI(deployment_name='Test1',
                       model_name='gpt-35-turbo',
                       openai_api_version='2023-07-01-preview',
-                      openai_api_key='d4f878c740d749deb907a6ebc9929c0d',
+                      openai_api_key=os.getenv("OPENAI_API_PATH"),
                       azure_endpoint="https://varuny.openai.azure.com/",
-                      temperature=0.1,  # Lower temperature for more deterministic outputs
-                    #   max_tokens=2048,  # Increase if you need longer responses
+                      temperature=0.1,  
                     )
 
 def extract_rules_from_text(text):
